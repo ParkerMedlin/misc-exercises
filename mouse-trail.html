@@ -1,0 +1,58 @@
+<style>
+    .trail { /* className for the trail elements */
+        position: absolute;
+        height: 6px; 
+        width: 6px;
+        border-radius: 3px;
+        background: teal;
+    }
+    body {
+        height: 300px;
+    }
+</style>
+
+<body>
+    <div class="trail"></div>
+    <div class="trail"></div>
+    <div class="trail"></div>
+    <div class="trail"></div>
+    <div class="trail"></div>
+    <div class="trail"></div>
+    <div class="trail"></div>
+    <div class="trail"></div>
+    <div class="trail"></div>
+    <div class="trail"></div>
+    <div class="trail"></div>
+    <div class="trail"></div>
+    <div class="trail"></div>
+    <div class="trail"></div>
+    <div class="trail"></div>
+    <div class="trail"></div>
+    <div class="trail"></div>
+    <div class="trail"></div>
+    <div class="trail"></div>
+    <div class="trail"></div>
+    <div class="trail"></div>
+    <div class="trail"></div>
+    <div class="trail"></div>
+    <div class="trail"></div>
+</body>
+
+<script>
+    function moveDivToMouse(divNodeList, currentPos, e) {
+        divNodeList[currentPos].style.top=e.clientY
+        divNodeList[currentPos].style.left=e.clientX
+        console.log(currentPos);
+    };
+
+    divList = document.querySelectorAll(".trail");
+    currentPos = 0;
+
+    window.addEventListener("mousemove", (event) => {
+        if (currentPos == divList.length) {
+            currentPos = 0;
+        };
+        moveDivToMouse(divList, currentPos, event);
+        currentPos++;
+    });
+</script>

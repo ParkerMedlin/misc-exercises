@@ -1,0 +1,54 @@
+<tab-panel>
+    <div data-tabname="one">Tab one</div>
+    <div data-tabname="two">Tab two</div>
+    <div data-tabname="three">Tab three</div>
+</tab-panel>
+
+<script>
+    function asTabs(node) {
+        firstChildNode = node.firstElementChild;
+        console.log(firstChildNode);
+        const firstButton = document.createElement("button");
+        firstButton.className = "tab-button"
+        firstButton.setAttribute("data-tabname", firstChildNode.getAttribute("data-tabname"))
+        firstButton.textContent = firstChildNode.textContent;
+        console.log(firstButton.className);
+        node.prepend(firstButton);
+
+        secondChildNode = firstChildNode.nextElementSibling;
+        console.log(secondChildNode);
+        const secondButton = document.createElement("button");
+        secondButton.className = "tab-button"
+        secondButton.setAttribute("data-tabname", secondChildNode.getAttribute("data-tabname"))
+        secondButton.textContent = secondChildNode.textContent;
+        console.log(secondButton.className);
+        firstButton.after(secondButton);
+        secondChildNode.style.display = "none";
+
+        thirdChildNode = secondChildNode.nextElementSibling;
+        console.log(thirdChildNode);
+        const thirdButton = document.createElement("button");
+        thirdButton.className = "tab-button"
+        thirdButton.setAttribute("data-tabname", thirdChildNode.getAttribute("data-tabname"))
+        thirdButton.textContent = thirdChildNode.textContent;
+        console.log(thirdButton.className);
+        secondButton.after(thirdButton);
+        thirdChildNode.style.display = "none";
+
+    }
+
+    asTabs(document.querySelector("tab-panel"));
+
+    let allButtons = document.querySelectorAll(".tab-button");
+    for (button of allButtons) {
+        button.addEventListener("click", (event) => {
+            let allTabs = document.querySelectorAll("div");
+            for (tab of allTabs) {
+                tab.style.display = "none";
+            }
+            thisTabName = event.target.getAttribute("data-tabname");
+            document.querySelector('div[data-tabname="' + thisTabName + '"]').style.display="block";
+        });
+    }
+    
+</script>
