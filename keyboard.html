@@ -7,7 +7,7 @@
       cursor:pointer;
       box-shadow: 0px 5px 1px rgba(32,32,32,0.2);
       -webkit-transition: margin 0.05s ease, background-color 0.05s ease, box-shadow 0.05s ease; }
-    .key:hover { background-color: rgb(255,192,32); }
+    .key:hover { background-color: rgb(188, 188, 192); }
 
     .key .label { position: absolute; bottom: 5px; text-align: center; left: 0px; right: 0px; }
 
@@ -18,10 +18,23 @@
     .keyboard-holder { margin: 30px auto; height: 200px; position:relative; user-select:none; -webkit-user-select:none;-moz-user-select:none;-o-user-select:none; }
 
     .code { border: 1px solid rgba(32,32,32,0.2); color: rgb(32,32,32); font-family: Courier New, Courier, monospace; font-size: 12px; white-space:pre; padding: 10px; margin: 10px; }
+
+    #noteValueContainer { display: flex; justify-content: center; align-items: center;}
+
+    #noteValueDisplay { padding: 12px; font-family: Helvetica; font-size: 72px;}
+
+    #noteLabel { font-size: 24px; font-family: Helvetica; }
+
+    #octaveValueDisplay { font-size: 18px; font-family: Helvetica; margin-top: 24px;}
+
+    #staffs { display: flex; justify-content: center; align-items: center; }
   </style>
 </head>
 
 <body>
+  <div id="staffs">
+    <div id="output"></div>
+  </div>
   <div id="keyboard" class="keyboard-holder" style="width: 1080px">
     <div class="white key" id="KEY_C,-1" style="width: 40px; height: 200px; left: 0px"></div>
     <div class="black key" id="KEY_C#,-1" style="width: 30px; height: 120px; left: 25px"></div>
@@ -71,13 +84,76 @@
     <div class="white key" id="KEY_A,2" style="width: 40px; height: 200px; left: 1040px"></div>
     <div class="black key" id="KEY_A#,2" style="width: 30px; height: 120px; left: 1065px"></div>
     <div class="white key" id="KEY_B,2" style="width: 40px; height: 200px; left: 1080px"></div>
+    <div class="white key" id="KEY_C,3" style="width: 40px; height: 200px; left: 1120px"></div>
   </div>
-  <div id="">
-    <p>Note</p>
-    <h1></h1>
+  <div id="noteValueContainer">
+    <p id="noteLabel">Note:</p>
+    <h1 id="noteValueDisplay"></h1>
+    <p id="octaveValueDisplay"></p>
   </div>
 </body>
 
+<script src="https://cdn.jsdelivr.net/npm/vexflow/build/cjs/vexflow.js"></script>
+<script src="audiosynth.js"></script>
 <script>
-
+  keyboardKeys = document.querySelectorAll('div[class*="key"')
+  for (key of keyboardKeys) {
+    key.addEventListener("mousedown", (e) => {
+      const noteValue = e.target.getAttribute("id").slice(0,-2).substring(4).replace(",","");
+      const octaveValue = e.target.getAttribute("id").substring(5).replace(",","").replace("#","");
+      document.getElementById("noteValueDisplay").textContent = noteValue;
+      document.getElementById("octaveValueDisplay").textContent = octaveValue;
+      e.target.style.backgroundColor = "blue";
+    });
+    key.addEventListener("mouseup", (e) => {
+      e.target.style.backgroundColor="";
+    });
+  };
 </script>
+
+<script>
+  const { Renderer, Stave, StaveNote, Voice, Formatter } = Vex.Flow;
+
+  Vex.Flow.setMusicFont('Bravura');
+
+  // Create an SVG renderer and attach it to the DIV element with id="output".
+  const div = document.getElementById('output');
+  const renderer = new Renderer(div, Renderer.Backends.SVG);
+
+  // Configure the rendering context.
+  renderer.resize(300, 200);
+  const context = renderer.getContext();
+
+  // Create a stave of width 200 at position 60, 40 on the canvas.
+  const stave = new Stave(60, 40, 200);
+
+  // Add a clef and time signature.
+  stave.addClef('treble')
+
+  const notes = [
+    // A quarter-note C.
+    new StaveNote({ keys: ["c/4"], duration: "q" }),
+
+    // A quarter-note D.
+    new StaveNote({ keys: ["d/4"], duration: "q" }),
+
+    // A quarter-note rest. Note that the key (b/4) specifies the vertical
+    // position of the rest.
+    new StaveNote({ keys: ["b/4"], duration: "qr" }),
+
+    // A C-Major chord.
+    new StaveNote({ keys: ["c/4", "e/4", "g/4"], duration: "q" }),
+    ];
+
+  // Create a voice in 4/4 and add above notes
+  const voice = new Voice({ num_beats: 4, beat_value: 4 });
+  voice.addTickables(notes);
+
+  // Format and justify the notes to 400 pixels.
+  new Formatter().joinVoices([voice]).format([voice], 200);
+
+  // Render voice
+  stave.setContext(context).draw();
+  voice.draw(context, stave);
+</script>
+
