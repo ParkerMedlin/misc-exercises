@@ -109,6 +109,8 @@
   let noteValue;
   let clefValue;
   let keyValue;
+  let octaveSound;
+  Synth instanceof AudioSynth;
 
 
   function generateNoteValue() {
@@ -127,7 +129,6 @@
       octaveKeyboard--;
       octaveVexFlow--;
     }
-
     let noteValueKeyboard = "KEY_" + noteValue + "," + octaveKeyboard;
     let noteValueVexFlow = noteValue + "/" + octaveVexFlow;
 
@@ -176,21 +177,28 @@
     return noteArray;
   });
 
+  window.addEventListener("click", () => {
+    
+  });
+
   // https://keithwhor.github.io/audiosynth/
   let lastKey = document.getElementById("KEY_C,-1");
   keyboardKeys = document.querySelectorAll('div[class*="key"]')
   for (key of keyboardKeys) {
     key.addEventListener("mousedown", (e) => {
       lastKey.style.backgroundColor="";
-      let noteDisplayValue = e.target.getAttribute("id").slice(0,-2).substring(4).replace(",","");;
+      let noteDisplayValue = e.target.getAttribute("id").slice(0,-2).substring(4).replace(",","");
       if (e.target.classList.contains(noteArray[4])) {
         noteDisplayValue = noteArray[4];
       } 
       let octaveDisplayValue = e.target.getAttribute("id").substring(5).replace(",","").replace("#","");
       document.getElementById("noteValueDisplay").textContent = noteDisplayValue;
       document.getElementById("octaveValueDisplay").textContent = octaveDisplayValue;
-      console.log(noteArray[0]);
-      console.log(e.target.getAttribute("id"));
+     
+      let octavePlayValue = Number(octaveDisplayValue) + 3;
+      console.log(octavePlayValue)
+      let keyboardPlayValue = e.target.getAttribute("id").slice(0,-2).substring(4).replace(",","");
+      Synth.play('piano', keyboardPlayValue, octavePlayValue, 1);
       if (e.target.classList.contains(noteArray[4]) && e.target.getAttribute("id").includes(noteArray[2])) {
         document.getElementById("noteValueDisplay").style.color = "green"
         document.getElementById("octaveValueDisplay").style.color = "green"
