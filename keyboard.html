@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <head>
   <style>
+    body { background-color: rgb(226, 226, 231); }
+    p { font-family: Helvetica }
+
+    #settingsContainer { display: flex; justify-content: center; align-items: center; gap: 8px; }
+
     .key { position: absolute; font-family: Helvetica; font-weight: 100; font-size: 12px;
       border: 1px solid rgba(32,32,32,0.2);
       border-radius: 0px 0px 5px 5px;
@@ -21,7 +26,7 @@
 
     #noteValueContainer { display: flex; justify-content: center; align-items: center;}
 
-    #noteValueDisplay { padding: 12px; font-family: Helvetica; font-size: 72px;}
+    #noteValueDisplay { padding-right: 12px; font-family: Helvetica; font-size: 72px; margin-top: 2px; }
 
     #noteLabel { font-size: 24px; font-family: Helvetica; }
 
@@ -29,11 +34,54 @@
 
     #staffs { display: flex; justify-content: center; align-items: center; }
 
-    #nextButton { display: flex; justify-content: center; align-items: center; }
+    #nextButton { display: flex; justify-content: center; align-items: center; font-size: 18px; }
+
+    #titleDiv { font-family: Helvetica; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+
+    #explanation { width: 30%; text-align: center; margin-bottom: 0px; }
+
+    #credits { font-family: Helvetica; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+
+    #output { height: 150px; }
+
+    h3 { margin: 0px; }
+
   </style>
 </head>
 
 <body>
+  <div id="titleDiv">
+    <h1>Note Identification Practice</h1>
+    <h3>Created by <a href="https://github.com/ParkerMedlin">Parker Medlin</a></h3>
+    <p  id="explanation"><em>Select a key signature and then click the Next Note button (or press the spacebar) to draw a new note.
+      Then try to click the corresponding key on the piano keyboard--if it's the right note, the key and the note label will turn green. 
+      Otherwise it'll be red.</em>
+    </p>
+    <br>
+  </div>
+  <div id="settingsContainer">
+    <p>Select a Key Signature:</p>
+    <select name="keySignatures" id="keySigSelect">
+      <option value="A">A</option>
+      <option value="Bb">Bb</option>
+      <option value="B">B</option>
+      <option value="C" selected>C</option>
+      <option value="C#">C#</option>
+      <option value="Db">Db</option>
+      <option value="D">D</option>
+      <option value="Eb">Eb</option>
+      <option value="E">E</option>
+      <option value="F">F</option>
+      <option value="F#">F#</option>
+      <option value="Gb">Gb</option>
+      <option value="G">G</option>
+      <option value="Ab">Ab</option>
+      <option value="random">Random</option>
+    </select>
+  </div>
+  <div id="nextButton">
+    <button onclick="drawNewNote()">Next Note</button>
+  </div>
   <div id="staffs">
     <div id="output"></div>
   </div>
@@ -89,117 +137,65 @@
     <div class="white key C" id="KEY_C,3" style="width: 40px; height: 200px; left: 1120px"></div>
   </div>
   <div id="noteValueContainer">
-    <p id="noteLabel">Note:</p>
     <h1 id="noteValueDisplay"></h1>
     <p id="octaveValueDisplay"></p>
   </div>
-  <div id="nextButton">
-    <button onclick="drawNewNote()">Next Note</button>
+  <div id="credits">
+    <p>Keyboard and sounds from <a href="https://github.com/keithwhor">Keith William Horwood</a>'s <a href="https://keithwhor.com/music/">AudioSynth</a> library and demo.</p>
+    <p>Staff and musical notes rendered using <a href="https://github.com/0xfe">Mohit Cheppudira</a>'s <a href="https://github.com/0xfe/vexflow">VexFlow</a> library.</p>
   </div>
 </body>
 
 <script src="https://cdn.jsdelivr.net/npm/vexflow/build/cjs/vexflow.js"></script>
 <script src="audiosynth.js"></script>
+<script src="drawplaylearn.js"></script>
 <script>
   let noteArray;
-  let noteValueKeyboard;
-  let noteValueVexFlow;
-  let octaveKeyboard;
-  let octaveVexFlow;
-  let noteValue;
-  let clefValue;
-  let keyValue;
-  let octaveSound;
+  // let keyboardNoteValue;
+  let vexFlowNoteValue;
+  let keyboardOctave;
+  let vexFlowOctave;
+  // let noteValue;
+  // let clefValue;
+  // let keySigValue;
+  // let octaveSound;
   Synth instanceof AudioSynth;
 
-
-  function generateNoteValue() {
-    // Return the note value and the octave fit for each format.
-    // For the keyboard, middle C is denoted "KEY_C,1", but 
-    // for VexFlow, middle C is denoted "C/4".
-    let possibleClefs = ['treble', 'bass'];
-    clefValue = possibleClefs[Math.floor(Math.random() * 2)]
-    let possibleNotes = ['A','Bb','B','C','C#','Db','D','Eb','E','F','F#','Gb','G','Ab'];
-    noteValue = possibleNotes[Math.floor(Math.random() * 12)];
-    keyValue = noteValue;
-
-    let octaveKeyboard = Math.floor(Math.random() * 3);
-    let octaveVexFlow = octaveKeyboard+3;
-    if (clefValue=='bass'){
-      octaveKeyboard--;
-      octaveVexFlow--;
+  document.addEventListener('keydown', e => {
+    if (e.code === 'Space') {
+      lastKey.style.backgroundColor="";
+      document.getElementById("noteValueDisplay").textContent = "";
+      document.getElementById("octaveValueDisplay").textContent = "";
+      noteArray = drawNewNote();
+      return noteArray;
     }
-    let noteValueKeyboard = "KEY_" + noteValue + "," + octaveKeyboard;
-    let noteValueVexFlow = noteValue + "/" + octaveVexFlow;
-
-    return [noteValueKeyboard, noteValueVexFlow, octaveKeyboard, octaveVexFlow, noteValue, clefValue, keyValue]
-  };
-
-  function drawNewNote() {
-    document.querySelector("#output").replaceChildren();
-    noteArray = generateNoteValue();
-    let myClef = noteArray[5];
-    let myKeySig = noteArray[6];
-
-    // https://github.com/0xfe/vexflow/wiki/Tutorial
-    const { Renderer, Stave, StaveNote, Voice, Formatter } = Vex.Flow;
-    Vex.Flow.setMusicFont('Bravura');
-
-    // Create an SVG renderer and attach it to the DIV element with id="output" and
-    // configure the rendering context. Then create stave at position 60, 40 width 200.
-    const div = document.getElementById('output');
-    const renderer = new Renderer(div, Renderer.Backends.SVG);
-    renderer.resize(300, 200);
-    const context = renderer.getContext();
-    const stave = new Stave(60, 40, 200);
-    stave.addClef(myClef).addKeySignature(myKeySig) // Time signature would be set here. 
-
-    // Create the notes and then add them to a Voice.
-    // https://stackoverflow.com/questions/53825011/simple-sheet-music-use-case-in-easyscore-vexflow
-    const notes = [
-      new StaveNote({ clef: myClef, keys: [noteArray[1]], duration: "q" }),
-      ];
-    const voice = new Voice({ num_beats: 1, beat_value: 4 });
-    voice.addTickables(notes);
-
-    // Format and justify the notes to 400 pixels. Then
-    // render the stave, then render the voice.
-    new Formatter().joinVoices([voice]).format([voice], 200);
-    stave.setContext(context).draw();
-    voice.draw(context, stave);
-
-    return noteArray;
-  };
+  })
 
   window.addEventListener("load", () => {
     noteArray = drawNewNote();
-    console.log(noteArray);
     return noteArray;
-  });
-
-  window.addEventListener("click", () => {
-    
-  });
+  }); 
 
   // https://keithwhor.github.io/audiosynth/
   let lastKey = document.getElementById("KEY_C,-1");
   keyboardKeys = document.querySelectorAll('div[class*="key"]')
   for (key of keyboardKeys) {
-    key.addEventListener("mousedown", (e) => {
+    key.addEventListener("mousedown", e => {
+      vexFlowOctave = noteArray[4];
+      vexFlowNoteValue = noteArray[2];
       lastKey.style.backgroundColor="";
       let noteDisplayValue = e.target.getAttribute("id").slice(0,-2).substring(4).replace(",","");
-      if (e.target.classList.contains(noteArray[4])) {
-        noteDisplayValue = noteArray[4];
-      } 
+      if (e.target.classList.contains(vexFlowOctave)) {
+        noteDisplayValue = vexFlowOctave;
+      }
       let octaveDisplayValue = e.target.getAttribute("id").substring(5).replace(",","").replace("#","");
-      document.getElementById("noteValueDisplay").textContent = noteDisplayValue;
+      document.getElementById("noteValueDisplay").textContent = noteDisplayValue.replace("b", "♭");
       document.getElementById("octaveValueDisplay").textContent = octaveDisplayValue;
-     
       let octavePlayValue = Number(octaveDisplayValue) + 3;
       console.log(octavePlayValue)
       let keyboardPlayValue = e.target.getAttribute("id").slice(0,-2).substring(4).replace(",","");
       Synth.play('piano', keyboardPlayValue, octavePlayValue, 1);
-      if (e.target.classList.contains(noteArray[4]) && e.target.getAttribute("id").includes(noteArray[2])) {
+      if (e.target.classList.contains(vexFlowOctave) && e.target.getAttribute("id").includes(vexFlowNoteValue)) {
         document.getElementById("noteValueDisplay").style.color = "green"
         document.getElementById("octaveValueDisplay").style.color = "green"
         e.target.style.backgroundColor = "green";
